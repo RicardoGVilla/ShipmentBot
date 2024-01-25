@@ -1,11 +1,12 @@
-import React from "react";
+import React from 'react';
+import { Box, Text, Heading } from '@chakra-ui/react';
+import ShipmentStatus from "../src/ShipmentStatus.jsx"
 
 function App() {
   return (
-    <div>
-      <h1>💖 Hello World!</h1>
-      <p>Welcome to your Electron application.</p>
-    </div>
+    <Box textAlign="center" py={10}>
+      <ShipmentStatus />
+    </Box>
   );
 }
 
