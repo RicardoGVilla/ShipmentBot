@@ -1,10 +1,33 @@
-import React from 'react';
-import { Heading, Table, Thead, Tbody, Tr, Th, Td } from '@chakra-ui/react';
-import { useDisclosure, Drawer, DrawerBody, DrawerHeader, DrawerOverlay, DrawerContent, DrawerCloseButton, Button } from '@chakra-ui/react';
-
+import React, { useEffect, useState } from 'react';
+import { Heading, Table, Thead, Tbody, Tr, Th, Td, Box, Text, Drawer, DrawerContent, DrawerBody, DrawerOverlay, Button, Flex } from '@chakra-ui/react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRobot } from '@fortawesome/free-solid-svg-icons';
 
 const ShipmentStatus = () => {
-    const { isOpen, onOpen, onClose } = useDisclosure();
+    const [isBotActive, setIsBotActive] = useState(false);
+    const [botMessage, setBotMessage] = useState('');
+    const [isOpen, setIsOpen] = useState(false);
+
+    
+    const hasActionNeededOrders = true; 
+
+    useEffect(() => {
+        if (hasActionNeededOrders) {
+            setBotMessage("Hi! Some orders need your attention today.");
+            setIsBotActive(true);
+        } else {
+            setBotMessage("Hi! Everything is good for today. No actions needed on your orders.");
+            setIsBotActive(true);
+        }
+    }, [hasActionNeededOrders]);
+
+    const handleDrawerOpen = () => {
+        setIsOpen(true);
+    };
+
+    const handleDrawerClose = () => {
+        setIsOpen(false);
+    };
 
     const shipments = [
         { poNumber: 'PO-00123', client: 'Acme Corp', product: 'Widgets', eta: '2024-03-15', status: 'In Transit' },
@@ -16,16 +39,11 @@ const ShipmentStatus = () => {
         { poNumber: 'PO-00129', client: 'Virtucon', product: 'Construction Materials', eta: '2024-04-10', status: 'Delayed' },
         { poNumber: 'PO-00130', client: 'Hooli', product: 'Software Licenses', eta: '2024-04-15', status: 'Delivered' },
     ];
-    
-
     return (
         <div>
-            <Button onClick={onOpen} colorScheme="blue" mb={4} placement="right" >Review Orders</Button>
-            <Drawer isOpen={isOpen} placement="right" onClose={onClose} width="100vw">
+            <Drawer isOpen={isOpen} placement="right" onClose={handleDrawerClose} width="100vw">
                 <DrawerOverlay />
                 <DrawerContent>
-                    <DrawerCloseButton />
-                    <DrawerHeader>Order Notification</DrawerHeader>
                     <DrawerBody>
                         There are some orders that need revision.
                     </DrawerBody>
@@ -58,6 +76,18 @@ const ShipmentStatus = () => {
                     ))}
                 </Tbody>
             </Table>
+
+            {isBotActive && (
+               <Box position="fixed" top="20px" right="20px" p="4" bg="white" borderRadius="md" boxShadow="md" width="225px">
+               <Flex alignItems="center"> 
+                   <FontAwesomeIcon icon={faRobot} style={{ marginRight: '10px' }}/>
+                   <Text>{botMessage}</Text>
+               </Flex>
+               {hasActionNeededOrders && (
+                   <Button onClick={handleDrawerOpen} mt="2">Review Orders</Button>
+               )}
+           </Box>
+            )}
         </div>
     );
 };
