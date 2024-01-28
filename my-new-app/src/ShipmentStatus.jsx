@@ -8,7 +8,6 @@ const ShipmentStatus = () => {
     const [botMessage, setBotMessage] = useState('');
     const [isOpen, setIsOpen] = useState(false);
 
-    
     const hasActionNeededOrders = true; 
 
     useEffect(() => {
@@ -21,6 +20,70 @@ const ShipmentStatus = () => {
         }
     }, [hasActionNeededOrders]);
 
+    // Define the new shipments data
+    const shipments = {
+        shipment1: {
+            client: "Interandina",
+            steamshipLine: "MSC",
+            poNumber: "5023-165K",
+            product: "wine",
+            supplier: "Cargill",
+            container: "CRSU6024460",
+            eta: "2024-02-15",
+            status: "In Transit",
+        },
+        shipment2: {
+            client: "Diser",
+            steamshipLine: "MSC",
+            poNumber: "5023-162K",
+            product: "wine",
+            supplier: "Cargill",
+            container: "GESU9357858",
+            eta: "2024-02-15",
+            status: "In Transit",
+        },
+        shipment3: {
+            client: "Diser",
+            steamshipLine: "Maersk",
+            poNumber: "5023-161K",
+            product: "wine",
+            supplier: "Cargill",
+            container: "SUDU6068809",
+            eta: "2024-02-15",
+            status: "In Transit",
+        },
+        shipment4: {
+            client: "Interandina",
+            poNumber: "5023-164K",
+            product: "wine",
+            steamshipLine: "Maersk",
+            supplier: "Cargill",
+            container: "MWCU5295851",
+            eta: "2024-02-15",
+            status: "In Transit",
+        },
+        shipment5: {
+            client: "AW shipments",
+            poNumber: "5023-147K",
+            product: "wine",
+            steamshipLine: "ONE",
+            supplier: "JBS",
+            container: "FSCU5886903",
+            eta: "2024-02-15",
+            status: "In Transit",
+        },
+        shipment6: {
+            client: " poNumberllopez",
+            poNumber: "5023-48K",
+            product: "wine",
+            steamshipLine: "ONE",
+            supplier: "JBS",
+            container: "SZLU9446927",
+            eta: "2024-02-15",
+            status: "In Transit",
+        },
+    };
+
     const handleDrawerOpen = () => {
         setIsOpen(true);
     };
@@ -29,16 +92,6 @@ const ShipmentStatus = () => {
         setIsOpen(false);
     };
 
-    const shipments = [
-        { poNumber: 'PO-00123', client: 'Acme Corp', product: 'Widgets', eta: '2024-03-15', status: 'In Transit' },
-        { poNumber: 'PO-00124', client: 'Globex Inc', product: 'Gadgets', eta: '2024-03-20', status: 'Action Needed' },
-        { poNumber: 'PO-00125', client: 'Soylent Corp', product: 'Widgets', eta: '2024-03-22', status: 'Delayed' },
-        { poNumber: 'PO-00126', client: 'Initech', product: 'Machinery', eta: '2024-03-25', status: 'On Schedule' },
-        { poNumber: 'PO-00127', client: 'Umbrella Corp', product: 'Medical Supplies', eta: '2024-03-30', status: 'Action Needed' },
-        { poNumber: 'PO-00128', client: 'Wayne Enterprises', product: 'Electronics', eta: '2024-04-05', status: 'In Transit' },
-        { poNumber: 'PO-00129', client: 'Virtucon', product: 'Construction Materials', eta: '2024-04-10', status: 'Delayed' },
-        { poNumber: 'PO-00130', client: 'Hooli', product: 'Software Licenses', eta: '2024-04-15', status: 'Delivered' },
-    ];
     return (
         <div>
             <Drawer isOpen={isOpen} placement="right" onClose={handleDrawerClose} width="100vw">
@@ -65,28 +118,28 @@ const ShipmentStatus = () => {
                     </Tr>
                 </Thead>
                 <Tbody>
-                    {shipments.map((shipment, index) => (
-                        <Tr key={index}>
-                            <Td>{shipment.poNumber}</Td>
-                            <Td>{shipment.client}</Td>
-                            <Td>{shipment.product}</Td>
-                            <Td>{shipment.eta}</Td>
-                            <Td>{shipment.status}</Td>
-                        </Tr>
-                    ))}
+                    {Object.keys(shipments).map((shipmentKey) => {
+                        const shipment = shipments[shipmentKey];
+                        return (
+                            <Tr key={shipmentKey}>
+                                <Td>{shipment.poNumber}</Td>
+                                <Td>{shipment.client}</Td>
+                                <Td>{shipment.product}</Td>
+                                <Td>{shipment.eta}</Td>
+                                <Td>{shipment.status}</Td>
+                            </Tr>
+                        );
+                    })}
                 </Tbody>
             </Table>
 
             {isBotActive && (
-               <Box position="fixed" top="20px" right="20px" p="4" bg="white" borderRadius="md" boxShadow="md" width="225px">
-               <Flex alignItems="center"> 
-                   <FontAwesomeIcon icon={faRobot} style={{ marginRight: '10px' }}/>
-                   <Text>{botMessage}</Text>
-               </Flex>
-               {hasActionNeededOrders && (
-                   <Button onClick={handleDrawerOpen} mt="2">Review Orders</Button>
-               )}
-           </Box>
+                <Box position="fixed" top="0px" right="20px" p="4" bg="white" borderRadius="md" boxShadow="md" width="225px">
+                    <Flex alignItems="center"> 
+                        <FontAwesomeIcon icon={faRobot} style={{ marginRight: '10px' }}/>
+                        <Text>{botMessage}</Text>
+                    </Flex>
+                </Box>
             )}
         </div>
     );
