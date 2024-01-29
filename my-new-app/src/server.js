@@ -2,10 +2,17 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const locateChrome = require("chrome-location");
 puppeteer.use(StealthPlugin());
+const axios = require("axios");
+const express = require("express");
+const app = express();
+const port = process.env.PORT || 4000;
+const cors = require("cors");
+
+app.use(cors());
 
 // current shipments
 
-export const shipments = {
+const shipments = {
   shipment1: {
     client: "Interandina",
     steamshipLine: "MSC",
@@ -68,6 +75,26 @@ export const shipments = {
   },
 };
 
+app.use(express.json());
+
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self' 'unsafe-inline' data: http://localhost:9000"
+  );
+  next();
+});
+
+app.get("/api/shipments", (req, res) => {
+  res.json(shipments);
+});
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+
+
 // Function to track a single shipment
 async function trackShipment(shipment) {
   let eta;
@@ -105,7 +132,7 @@ function delay(ms) {
 }
 
 // Run the tracking process
-trackShipments().then(() => console.log("All shipments tracked."));
+// trackShipments().then(() => console.log("All shipments tracked."));
 
 // Function to help track all MSC shipments
 async function runMsc(containerNumber) {

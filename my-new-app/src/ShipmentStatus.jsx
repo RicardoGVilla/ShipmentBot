@@ -2,11 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { Heading, Table, Thead, Tbody, Tr, Th, Td, Box, Text, Drawer, DrawerContent, DrawerBody, DrawerOverlay, Button, Flex } from '@chakra-ui/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
+
 
 const ShipmentStatus = () => {
     const [isBotActive, setIsBotActive] = useState(false);
     const [botMessage, setBotMessage] = useState('');
     const [isOpen, setIsOpen] = useState(false);
+    const [shipments, setShipments] = useState([]);
+
+    useEffect(() => {
+        // Fetch shipments data from the Express.js API
+        axios.get('http://localhost:4000/api/shipments')
+          .then((response) => {
+            setShipments(response.data);
+          })
+          .catch((error) => {
+            console.error('Error fetching shipments data:', error.message);
+          });
+      }, []);
 
     const hasActionNeededOrders = true; 
 
@@ -20,69 +34,6 @@ const ShipmentStatus = () => {
         }
     }, [hasActionNeededOrders]);
 
-    // Define the new shipments data
-    const shipments = {
-        shipment1: {
-            client: "Interandina",
-            steamshipLine: "MSC",
-            poNumber: "5023-165K",
-            product: "wine",
-            supplier: "Cargill",
-            container: "CRSU6024460",
-            eta: "2024-02-15",
-            status: "In Transit",
-        },
-        shipment2: {
-            client: "Diser",
-            steamshipLine: "MSC",
-            poNumber: "5023-162K",
-            product: "wine",
-            supplier: "Cargill",
-            container: "GESU9357858",
-            eta: "2024-02-15",
-            status: "In Transit",
-        },
-        shipment3: {
-            client: "Diser",
-            steamshipLine: "Maersk",
-            poNumber: "5023-161K",
-            product: "wine",
-            supplier: "Cargill",
-            container: "SUDU6068809",
-            eta: "2024-02-15",
-            status: "In Transit",
-        },
-        shipment4: {
-            client: "Interandina",
-            poNumber: "5023-164K",
-            product: "wine",
-            steamshipLine: "Maersk",
-            supplier: "Cargill",
-            container: "MWCU5295851",
-            eta: "2024-02-15",
-            status: "In Transit",
-        },
-        shipment5: {
-            client: "AW shipments",
-            poNumber: "5023-147K",
-            product: "wine",
-            steamshipLine: "ONE",
-            supplier: "JBS",
-            container: "FSCU5886903",
-            eta: "2024-02-15",
-            status: "In Transit",
-        },
-        shipment6: {
-            client: " poNumberllopez",
-            poNumber: "5023-48K",
-            product: "wine",
-            steamshipLine: "ONE",
-            supplier: "JBS",
-            container: "SZLU9446927",
-            eta: "2024-02-15",
-            status: "In Transit",
-        },
-    };
 
     const handleDrawerOpen = () => {
         setIsOpen(true);
