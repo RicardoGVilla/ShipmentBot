@@ -5,8 +5,14 @@ puppeteer.use(StealthPlugin());
 const express = require("express");
 const app = express();
 const port = process.env.PORT || 4000;
+const cors = require("cors");
 
-
+allowedOrigins = ["http://localhost:3000"];
+app.use(
+  cors({
+    origin: allowedOrigins,
+  })
+);
 // current shipments
 
 const shipments = {
@@ -71,7 +77,6 @@ const shipments = {
     status: "In Transit",
   },
 };
-
 
 
 
