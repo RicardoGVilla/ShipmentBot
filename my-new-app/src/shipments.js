@@ -2,37 +2,76 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const locateChrome = require("chrome-location");
 puppeteer.use(StealthPlugin());
+const {
+  getShipments,
+  isDatabaseEmpty,
+  insertShipments,
+  updateShipment,
+} = require("./mongodb");
 const shipments = require("./shipmentdetails");
 
 
 // Function to track a single shipment
 async function trackShipment(shipment) {
-  let eta;
-  switch (shipment.steamshipLine) {
-    case "MSC":
-      eta = await runMsc(shipment.container);
-      break;
-    case "Maersk":
-      eta = await runMaersk(shipment.container);
-      break;
-    case "ONE":
-      eta = await runOne(shipment.container);
-      break;
-    default:
-      console.log("Steamship line not supported for tracking");
-      eta = "eta Not available";
+  try {
+    let eta;
+    switch (shipment.steamshipLine) {
+      case "MSC":
+        eta = await runMsc(shipment.container);
+        break;
+      case "Maersk":
+        eta = await runMaersk(shipment.container);
+        break;
+      case "ONE":
+        eta = await runOne(shipment.container);
+        break;
+      default:
+        console.log("Steamship line not supported for tracking");
+        eta = shipment.eta; // Use the original ETA if the line is not supported
+    }
+    return eta ? eta : shipment.eta; // Return new ETA if available, otherwise original
+  } catch (error) {
+    console.error(
+      `Error tracking shipment for container ${shipment.container}: ${error}`
+    );
+    return shipment.eta; // Return the original ETA in case of an error
   }
-  shipment.eta = eta;
-  console.log(shipment.eta);
 }
+
 
 // Function to automate tracking of all shipments
 async function trackShipments() {
-  for (const key in shipments) {
-    if (shipments.hasOwnProperty(key)) {
-      await trackShipment(shipments[key]);
-      await delay(60000); // Wait for 1 minute
+  // Check if the database is empty
+  const empty = await isDatabaseEmpty();
+
+  if (empty) {
+    // Insert all shipments if the database is empty
+    await insertShipments(shipments);
+    console.log("All shipments inserted into the database.");
+  } else {
+    // If the database is not empty, update shipments with changed ETAs
+    const shipmentsFromDB = await getShipments();
+
+    for (const key in shipments) {
+      if (shipments.hasOwnProperty(key)) {
+        const newShipment = shipments[key];
+        const existingShipment = shipmentsFromDB.find(
+          (s) => s.container === newShipment.container
+        );
+
+        if (existingShipment) {
+          const latestEta = await trackShipment(newShipment);
+          if (latestEta !== existingShipment.eta) {
+            // Update shipment in database
+            await updateShipment(newShipment.container, latestEta);
+          }
+        }
+
+        await delay(60000); // Wait for 1 minute between tracking requests
+      }
     }
+
+    console.log("All shipments tracked and updated in the database.");
   }
 }
 
@@ -42,7 +81,7 @@ function delay(ms) {
 }
 
 // Run the tracking process
-trackShipments().then(() => console.log("All shipments tracked."));
+trackShipments().then(() => console.log("All shipments processed."));
 
 // Function to help track all MSC shipments
 async function runMsc(containerNumber) {
