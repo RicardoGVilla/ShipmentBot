@@ -2,69 +2,8 @@ const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const locateChrome = require("chrome-location");
 puppeteer.use(StealthPlugin());
+const shipments = require("./shipmentdetails");
 
-const shipments = {
-  shipment1: {
-    client: "Interandina",
-    steamshipLine: "MSC",
-    poNumber: "5023-165K",
-    product: "wine",
-    supplier: "Cargill",
-    container: "CRSU6024460",
-    eta: "2024-02-15",
-    status: "In Transit",
-  },
-  shipment2: {
-    client: "Diser",
-    steamshipLine: "MSC",
-    poNumber: "5023-162K",
-    product: "wine",
-    supplier: "Cargill",
-    container: "GESU9357858",
-    eta: "2024-02-15",
-    status: "In Transit",
-  },
-  shipment3: {
-    client: "Diser",
-    steamshipLine: "Maersk",
-    poNumber: "5023-161K",
-    product: "wine",
-    supplier: "Cargill",
-    container: "SUDU6068809",
-    eta: "2024-02-15",
-    status: "In Transit",
-  },
-  shipment4: {
-    client: "Interandina",
-    poNumber: "5023-164K",
-    product: "wine",
-    steamshipLine: "Maersk",
-    supplier: "Cargill",
-    container: "MWCU5295851",
-    eta: "2024-02-15",
-    status: "In Transit",
-  },
-  shipment5: {
-    client: "AW shipments",
-    poNumber: "5023-147K",
-    product: "wine",
-    steamshipLine: "ONE",
-    supplier: "JBS",
-    container: "FSCU5886903",
-    eta: "2024-02-15",
-    status: "In Transit",
-  },
-  shipment6: {
-    client: " poNumberllopez",
-    poNumber: "5023-48K",
-    product: "wine",
-    steamshipLine: "ONE",
-    supplier: "JBS",
-    container: "SZLU9446927",
-    eta: "2024-02-15",
-    status: "In Transit",
-  },
-};
 
 // Function to track a single shipment
 async function trackShipment(shipment) {
@@ -73,12 +12,12 @@ async function trackShipment(shipment) {
     case "MSC":
       eta = await runMsc(shipment.container);
       break;
-    // case "Maersk":
-    //   eta = await runMaersk(shipment.container);
-    //   break;
-    // case "ONE":
-    //   eta = await runOne(shipment.container);
-    //   break;
+    case "Maersk":
+      eta = await runMaersk(shipment.container);
+      break;
+    case "ONE":
+      eta = await runOne(shipment.container);
+      break;
     default:
       console.log("Steamship line not supported for tracking");
       eta = "eta Not available";
@@ -230,4 +169,3 @@ async function runHapagLloyd(containerNumber) {
   await browser.close();
 }
 
-module.exports = shipments;
