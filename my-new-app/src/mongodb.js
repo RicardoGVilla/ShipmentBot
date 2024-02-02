@@ -61,6 +61,8 @@ async function getShipments() {
   }
 }
 
+
+
 module.exports = {
   getShipments,
   isDatabaseEmpty,

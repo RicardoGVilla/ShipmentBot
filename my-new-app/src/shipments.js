@@ -1,4 +1,5 @@
 const puppeteer = require("puppeteer-extra");
+const moment = require("moment");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
 const locateChrome = require("chrome-location");
 puppeteer.use(StealthPlugin());
@@ -18,25 +19,39 @@ async function trackShipment(shipment) {
     switch (shipment.steamshipLine) {
       case "MSC":
         eta = await runMsc(shipment.container);
+        if (!eta) {
+          console.log("No ETA was retrieved for this shipment.");
+        } else {
+          console.log(`ETA for container ${shipment.container}: ${eta}`);
+        }
         break;
-      case "Maersk":
-        eta = await runMaersk(shipment.container);
-        break;
-      case "ONE":
-        eta = await runOne(shipment.container);
-        break;
+      // case "Maersk":
+      //   eta = await runMaersk(shipment.container);
+      //   break;
+      // case "ONE":
+      //   eta = await runOne(shipment.container);
+      //   break;
       default:
         console.log("Steamship line not supported for tracking");
-        eta = shipment.eta; // Use the original ETA if the line is not supported
+        eta = null; // Use null to indicate no new ETA was found
     }
-    return eta ? eta : shipment.eta; // Return new ETA if available, otherwise original
+    
+    // If a new ETA was found, return it
+    if (eta) return eta;
+
+    // If not, use the existing ETA from the database
+    const shipmentsFromDB = await getShipments();
+    const existingShipment = shipmentsFromDB.find(s => s.container === shipment.container);
+    return existingShipment ? existingShipment.eta : shipment.eta;
   } catch (error) {
-    console.error(
-      `Error tracking shipment for container ${shipment.container}: ${error}`
-    );
-    return shipment.eta; // Return the original ETA in case of an error
+    console.error(`Error tracking shipment for container ${shipment.container}: ${error}`);
+    // In case of any error, return the latest ETA from the database
+    const shipmentsFromDB = await getShipments();
+    const existingShipment = shipmentsFromDB.find(s => s.container === shipment.container);
+    return existingShipment ? existingShipment.eta : shipment.eta;
   }
 }
+
 
 
 // Function to automate tracking of all shipments
@@ -81,7 +96,10 @@ function delay(ms) {
 }
 
 // Run the tracking process
-trackShipments().then(() => console.log("All shipments processed."));
+trackShipments()
+  .then(() => console.log("All shipments processed."))
+  .catch((error) => console.error("An error occurred:", error));
+
 
 // Function to help track all MSC shipments
 async function runMsc(containerNumber) {
@@ -95,24 +113,35 @@ async function runMsc(containerNumber) {
     "https://www.msc.com/en/track-a-shipment?__RequestVerificationToken=token1&trackingMode=1"
   );
 
+  // Accept cookies if necessary
+  const cookiesInputSelector = "#onetrust-accept-btn-handler";
+  await page.waitForSelector(cookiesInputSelector, { visible: true });
+  await page.click(cookiesInputSelector);
+
+  // Type the container number and press Enter
   const searchInputSelector = "#trackingNumber";
+  await page.waitForSelector(searchInputSelector, { visible: true });
   await page.type(searchInputSelector, containerNumber);
   await page.keyboard.press("Enter");
 
+  // Define the selector for the element that contains the information you want to extract
   const selector =
-    "body > div.msc-main > div.msc-flow-tracking.separator--bottom-medium > div > div:nth-child(3) > div > div > div > div.msc-flow-tracking__results > div > div > div.msc-flow-tracking__containers > div > div > div.msc-flow-tracking__bar.open > div > div.msc-flow-tracking__cell.msc-flow-tracking__cell--four > div > div > div > span.data-value";
+    "body > div.msc-main > div.msc-flow-tracking.separator--bottom-medium > div > div:nth-child(3) > div > div > div > div.msc-flow-tracking__results > div > div > div.msc-flow-tracking__containers > div > div > div.msc-flow-tracking__tracking > div.msc-flow-tracking__steps > div:nth-child(2) > div > div.msc-flow-tracking__cell.msc-flow-tracking__cell--two";
+  await page.waitForSelector(selector, { visible: true });
 
-  await page.waitForSelector(selector);
-  const element = await page.$(selector);
+  // Extract the text from the element
+  const text = await page.evaluate((selector) => {
+    return document.querySelector(selector).innerText;
+  }, selector);
 
-  let eta = "Not found";
-  if (element) {
-    eta = await element.evaluate((element) => element.textContent);
-  }
+  console.log(text); // This will output the text content of the selected element
+
+  // Rest of your code to extract other information if necessary
 
   await browser.close();
-  return eta;
+  return text;
 }
+
 
 //Function to track ONE shipments
 async function runOne(containerNumber) {
@@ -151,9 +180,10 @@ async function runOne(containerNumber) {
     );
   }
 
-  await browser.close();
+  // await browser.close();
   return eta;
 }
+
 
 //Function to track Maersk shipments
 async function runMaersk(containerNumber) {
@@ -170,11 +200,15 @@ async function runMaersk(containerNumber) {
     "#maersk-app > div > div > div > div.container.container--ocean > dl > dd.container-info__text.container-info__text--date";
 
   await page.waitForSelector(selector);
-  let element = await page.$(selector);
+  let etaElement = await page.$(selector);
 
-  if (element) {
-    const text = await page.evaluate((element) => element.textContent, element);
-    element = text;
+  let eta = "Not found"; // Default value in case of an error
+  if (etaElement) {
+    const text = await page.evaluate(
+      (element) => element.textContent,
+      etaElement
+    );
+    eta = moment(text.trim(), "DD MMM YYYY HH:mm").format("DD MMM YYYY");
   } else {
     console.log(
       "Element with selector not found for container",
@@ -183,8 +217,9 @@ async function runMaersk(containerNumber) {
   }
 
   await browser.close();
-  return element;
+  return eta; // This will now return the date in '30 Jan 2024' format.
 }
+
 
 async function runHapagLloyd(containerNumber) {
   const browser = await puppeteer.launch({
