@@ -17,5 +17,6 @@ By automating the shipment tracking process and web scrapping the websites on a 
 - MongoDB
 - Node.js
 - Puppeteer
+- React
 - Chakra UI
 - Electron
