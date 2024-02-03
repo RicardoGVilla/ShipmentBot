@@ -8,7 +8,7 @@ The primary objective of this project was to automate and streamline the daily t
 
 ## Solution
 
-In essence, the bot uses the Node.js library Puppeteer for web scraping information from multiple shipping line websites. It stores this information in a non-relational database, MongoDB, using an API and displays the current shipments using React and Chakra UI.   
+The bot uses the Node.js library Puppeteer for web scraping information from multiple shipping line websites. It stores this information in a non-relational database, MongoDB, using an API and displays the current shipments using React and Chakra UI.   
 
 By automating the shipment tracking process and web scrapping the websites on a daily basis, it has allowed me to save time and avoid the cumbersome task of tracking all shipments and its current status.
 
