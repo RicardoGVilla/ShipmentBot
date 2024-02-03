@@ -61,6 +61,20 @@ async function getShipments() {
   }
 }
 
+// Function to remove all shipments 
+async function removeAllShipments() {
+  try {
+    await client.connect();
+    const database = client.db(databaseName);
+    const collection = database.collection(collectionName);
+    const result = await collection.deleteMany({});
+    console.log(
+      `Removed ${result.deletedCount} documents from the collection.`
+    );
+  } finally {
+    await client.close();
+  }
+}
 
 
 module.exports = {

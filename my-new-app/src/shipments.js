@@ -25,15 +25,15 @@ async function trackShipment(shipment) {
           console.log(`ETA for container ${shipment.container}: ${eta}`);
         }
         break;
-      // case "Maersk":
-      //   eta = await runMaersk(shipment.container);
-      //   break;
-      // case "ONE":
-      //   eta = await runOne(shipment.container);
-      //   break;
+      case "Maersk":
+        eta = await runMaersk(shipment.container);
+        break;
+      case "ONE":
+        eta = await runOne(shipment.container);
+        break;
       default:
         console.log("Steamship line not supported for tracking");
-        eta = null; // Use null to indicate no new ETA was found
+        eta = null; 
     }
     
     // If a new ETA was found, return it
@@ -53,18 +53,14 @@ async function trackShipment(shipment) {
 }
 
 
-
 // Function to automate tracking of all shipments
 async function trackShipments() {
-  // Check if the database is empty
   const empty = await isDatabaseEmpty();
 
   if (empty) {
-    // Insert all shipments if the database is empty
     await insertShipments(shipments);
     console.log("All shipments inserted into the database.");
   } else {
-    // If the database is not empty, update shipments with changed ETAs
     const shipmentsFromDB = await getShipments();
 
     for (const key in shipments) {
@@ -77,12 +73,11 @@ async function trackShipments() {
         if (existingShipment) {
           const latestEta = await trackShipment(newShipment);
           if (latestEta !== existingShipment.eta) {
-            // Update shipment in database
             await updateShipment(newShipment.container, latestEta);
           }
         }
 
-        await delay(60000); // Wait for 1 minute between tracking requests
+        await delay(30000); 
       }
     }
 
@@ -90,18 +85,15 @@ async function trackShipments() {
   }
 }
 
-// Function to introduce a delay to avoid getting flagged
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Run the tracking process
 trackShipments()
   .then(() => console.log("All shipments processed."))
   .catch((error) => console.error("An error occurred:", error));
 
-
-// Function to help track all MSC shipments
+// Function to run all MSC shipments
 async function runMsc(containerNumber) {
   const browser = await puppeteer.launch({
     headless: false,
@@ -113,33 +105,28 @@ async function runMsc(containerNumber) {
     "https://www.msc.com/en/track-a-shipment?__RequestVerificationToken=token1&trackingMode=1"
   );
 
-  // Accept cookies if necessary
   const cookiesInputSelector = "#onetrust-accept-btn-handler";
   await page.waitForSelector(cookiesInputSelector, { visible: true });
   await page.click(cookiesInputSelector);
 
-  // Type the container number and press Enter
   const searchInputSelector = "#trackingNumber";
   await page.waitForSelector(searchInputSelector, { visible: true });
   await page.type(searchInputSelector, containerNumber);
   await page.keyboard.press("Enter");
 
-  // Define the selector for the element that contains the information you want to extract
   const selector =
     "body > div.msc-main > div.msc-flow-tracking.separator--bottom-medium > div > div:nth-child(3) > div > div > div > div.msc-flow-tracking__results > div > div > div.msc-flow-tracking__containers > div > div > div.msc-flow-tracking__tracking > div.msc-flow-tracking__steps > div:nth-child(2) > div > div.msc-flow-tracking__cell.msc-flow-tracking__cell--two";
   await page.waitForSelector(selector, { visible: true });
 
-  // Extract the text from the element
-  const text = await page.evaluate((selector) => {
+  const dateText = await page.evaluate((selector) => {
     return document.querySelector(selector).innerText;
   }, selector);
 
-  console.log(text); // This will output the text content of the selected element
-
-  // Rest of your code to extract other information if necessary
+  const dateParts = dateText.split("/"); 
+  const formattedDate = moment(dateParts[1], "MM").format("D MMMM YYYY");
 
   await browser.close();
-  return text;
+  return formattedDate;
 }
 
 
@@ -172,7 +159,18 @@ async function runOne(containerNumber) {
       (element) => element.textContent,
       elementInsideIframe
     );
-    eta = textContent;
+
+    // Parse the date and format it using moment
+    const dateMatch = textContent.match(/\d{4}-\d{2}-\d{2}/); // Assuming date is in 'yyyy-MM-dd' format
+    if (dateMatch) {
+      const formattedDate = moment(dateMatch[0]).format("D MMMM YYYY");
+      eta = formattedDate;
+    } else {
+      console.log(
+        "Date not found in the expected format for container",
+        containerNumber
+      );
+    }
   } else {
     console.log(
       "Element inside iframe not found for container",
@@ -180,10 +178,9 @@ async function runOne(containerNumber) {
     );
   }
 
-  // await browser.close();
+  await browser.close();
   return eta;
 }
-
 
 //Function to track Maersk shipments
 async function runMaersk(containerNumber) {
@@ -217,7 +214,7 @@ async function runMaersk(containerNumber) {
   }
 
   await browser.close();
-  return eta; // This will now return the date in '30 Jan 2024' format.
+  return eta; 
 }
 
 
