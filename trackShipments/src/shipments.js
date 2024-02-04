@@ -76,7 +76,7 @@ async function trackShipments() {
             await updateShipment(newShipment.container, latestEta);
           }
         }
-
+        // add a delay of 30 seconds between function calls 
         await delay(30000); 
       }
     }
@@ -93,7 +93,9 @@ trackShipments()
   .then(() => console.log("All shipments processed."))
   .catch((error) => console.error("An error occurred:", error));
 
-// Function to run all MSC shipments
+
+
+// Function to run MSC shipments
 async function runMsc(containerNumber) {
   const browser = await puppeteer.launch({
     headless: false,

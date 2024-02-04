@@ -76,7 +76,6 @@ async function removeAllShipments() {
   }
 }
 
-
 module.exports = {
   getShipments,
   isDatabaseEmpty,
