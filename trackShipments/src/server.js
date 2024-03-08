@@ -4,6 +4,7 @@ const port = process.env.PORT || 4000;
 const cors = require("cors");
 const { getShipments } = require("./mongodb");
 
+
 // Define an async function to fetch shipments
 const fetchShipments = async () => {
   try {

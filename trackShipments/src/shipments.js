@@ -11,7 +11,6 @@ const {
 } = require("./mongodb");
 const shipments = require("./shipmentdetails");
 
-
 // Function to track a single shipment
 async function trackShipment(shipment) {
   try {
@@ -33,25 +32,30 @@ async function trackShipment(shipment) {
         break;
       default:
         console.log("Steamship line not supported for tracking");
-        eta = null; 
+        eta = null;
     }
-    
+
     // If a new ETA was found, return it
     if (eta) return eta;
 
     // If not, use the existing ETA from the database
     const shipmentsFromDB = await getShipments();
-    const existingShipment = shipmentsFromDB.find(s => s.container === shipment.container);
+    const existingShipment = shipmentsFromDB.find(
+      (s) => s.container === shipment.container
+    );
     return existingShipment ? existingShipment.eta : shipment.eta;
   } catch (error) {
-    console.error(`Error tracking shipment for container ${shipment.container}: ${error}`);
+    console.error(
+      `Error tracking shipment for container ${shipment.container}: ${error}`
+    );
     // In case of any error, return the latest ETA from the database
     const shipmentsFromDB = await getShipments();
-    const existingShipment = shipmentsFromDB.find(s => s.container === shipment.container);
+    const existingShipment = shipmentsFromDB.find(
+      (s) => s.container === shipment.container
+    );
     return existingShipment ? existingShipment.eta : shipment.eta;
   }
 }
-
 
 // Function to automate tracking of all shipments
 async function trackShipments() {
@@ -76,8 +80,8 @@ async function trackShipments() {
             await updateShipment(newShipment.container, latestEta);
           }
         }
-        // add a delay of 30 seconds between function calls 
-        await delay(30000); 
+        // add a delay of 30 seconds between function calls
+        await delay(30000);
       }
     }
 
@@ -92,8 +96,6 @@ function delay(ms) {
 trackShipments()
   .then(() => console.log("All shipments processed."))
   .catch((error) => console.error("An error occurred:", error));
-
-
 
 // Function to run MSC shipments
 async function runMsc(containerNumber) {
@@ -124,13 +126,12 @@ async function runMsc(containerNumber) {
     return document.querySelector(selector).innerText;
   }, selector);
 
-  const dateParts = dateText.split("/"); 
+  const dateParts = dateText.split("/");
   const formattedDate = moment(dateParts[1], "MM").format("D MMMM YYYY");
 
   await browser.close();
   return formattedDate;
 }
-
 
 //Function to track ONE shipments
 async function runOne(containerNumber) {
@@ -216,9 +217,8 @@ async function runMaersk(containerNumber) {
   }
 
   await browser.close();
-  return eta; 
+  return eta;
 }
-
 
 async function runHapagLloyd(containerNumber) {
   const browser = await puppeteer.launch({
