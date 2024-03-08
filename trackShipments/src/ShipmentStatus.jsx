@@ -62,6 +62,8 @@ const ShipmentStatus = () => {
             <Th color="white" bg="navy" py={2} fontSize="lg">PO Number</Th>
             <Th color="white" bg="navy" py={2} fontSize="lg">Client</Th>
             <Th color="white" bg="navy" py={2} fontSize="lg">Product</Th>
+            <Th color="white" bg="navy" py={2} fontSize="lg">Steamship Line</Th>
+            <Th color="white" bg="navy" py={2} fontSize="lg">Container</Th>
             <Th color="white" bg="navy" py={2} fontSize="lg">ETA</Th>
             <Th color="white" bg="navy" py={2} fontSize="lg">Status</Th>
         </Tr>
@@ -74,6 +76,8 @@ const ShipmentStatus = () => {
                     <Td>{shipment.poNumber}</Td>
                     <Td>{shipment.client}</Td>
                     <Td>{shipment.product}</Td>
+                    <Td>{shipment.steamshipLine}</Td>
+                    <Td>{shipment.container}</Td>
                     <Td>{shipment.eta}</Td>
                     <Td>{shipment.status}</Td>
                 </Tr>

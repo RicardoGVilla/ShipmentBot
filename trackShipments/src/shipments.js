@@ -18,6 +18,7 @@ async function trackShipment(shipment) {
     switch (shipment.steamshipLine) {
       case "MSC":
         eta = await runMsc(shipment.container);
+        console.log(eta);
         if (!eta) {
           console.log("No ETA was retrieved for this shipment.");
         } else {
@@ -119,16 +120,17 @@ async function runMsc(containerNumber) {
   await page.keyboard.press("Enter");
 
   const selector =
-    "body > div.msc-main > div.msc-flow-tracking.separator--bottom-medium > div > div:nth-child(3) > div > div > div > div.msc-flow-tracking__results > div > div > div.msc-flow-tracking__containers > div > div > div.msc-flow-tracking__tracking > div.msc-flow-tracking__steps > div:nth-child(2) > div > div.msc-flow-tracking__cell.msc-flow-tracking__cell--two";
+    "body > div.msc-main > div.msc-flow-tracking.separator--bottom-medium > div > div:nth-child(3) > div > div > div > div.msc-flow-tracking__results > div > div > div.msc-flow-tracking__containers > div > div > div.msc-flow-tracking__bar.open > div > div.msc-flow-tracking__cell.msc-flow-tracking__cell--four > div > div > div > span.data-value";
+
   await page.waitForSelector(selector, { visible: true });
 
   const dateText = await page.evaluate((selector) => {
     return document.querySelector(selector).innerText;
   }, selector);
 
-  const dateParts = dateText.split("/");
-  const formattedDate = moment(dateParts[1], "MM").format("D MMMM YYYY");
 
+  const formattedDate = moment(dateText, "DD/MM/YYYY").format("D MMMM YYYY");
+  
   await browser.close();
   return formattedDate;
 }
@@ -145,44 +147,68 @@ async function runOne(containerNumber) {
 
   await page.goto(trackingUrl);
 
-  const iframeSelector = "#IframeCurrentEcom";
-  await page.waitForSelector(iframeSelector);
-  const iframeElement = await page.$(iframeSelector);
-  await page.waitForTimeout(2000);
-  const iframe = await iframeElement.contentFrame();
+const iframeSelector = "#IframeCurrentEcom";
+await page.waitForSelector(iframeSelector);
 
-  const elementInsideIframeSelector =
-    "#detail > tbody > tr:nth-child(10) > td:nth-child(4)";
-  const elementInsideIframe = await iframe.$(elementInsideIframeSelector);
+// Find the iframe by its selector
+const elementHandle = await page.$(iframeSelector);
 
-  let eta = "";
+// Get the iframe content frame
+const frame = await elementHandle.contentFrame();
+console.log(frame);
 
-  if (elementInsideIframe) {
-    const textContent = await iframe.evaluate(
-      (element) => element.textContent,
-      elementInsideIframe
-    );
+// Now you can use the frame to interact within the iframe
+// For example, to get the body HTML of the iframe you can do:
+const bodyHTML = await frame.evaluate(() => document.body.innerHTML);
 
-    // Parse the date and format it using moment
-    const dateMatch = textContent.match(/\d{4}-\d{2}-\d{2}/); // Assuming date is in 'yyyy-MM-dd' format
-    if (dateMatch) {
-      const formattedDate = moment(dateMatch[0]).format("D MMMM YYYY");
-      eta = formattedDate;
-    } else {
-      console.log(
-        "Date not found in the expected format for container",
-        containerNumber
-      );
-    }
-  } else {
-    console.log(
-      "Element inside iframe not found for container",
-      containerNumber
-    );
-  }
+// console.log(bodyHTML);
 
-  await browser.close();
-  return eta;
+  // etaSelector = "#sailing > tbody > tr > td:nth-child(5)";
+  // await page.waitForSelector(etaSelector);
+  // dateText = insideDoc.querySelector(etaSelector);
+  // console.log(dateText);
+
+  // await page.waitForSelector(selector, { visible: true });
+
+  // const dateText = await page.evaluate((selector) => {
+  //   return document.querySelector(selector).innerText;
+  // }, selector);
+
+  // console.log(dateText)
+
+  // const elementInsideIframe = await iframe.$(elementInsideIframeSelector);
+  // console.log(elementInsideIframe);
+
+
+  // let eta = "";
+
+  // if (elementInsideIframe) {
+  //   const textContent = await iframe.evaluate(
+  //     (element) => element.textContent,
+  //     elementInsideIframe
+  //   );
+
+  //   // Parse the date and format it using moment
+  //   const dateMatch = textContent.match(/\d{4}-\d{2}-\d{2}/); // Assuming date is in 'yyyy-MM-dd' format
+  //   if (dateMatch) {
+  //     const formattedDate = moment(dateMatch[0]).format("D MMMM YYYY");
+  //     eta = formattedDate;
+  //   } else {
+  //     console.log(
+  //       "Date not found in the expected format for container",
+  //       containerNumber
+  //     );
+  //   }
+  // } else {
+  //   console.log(
+  //     "Element inside iframe not found for container",
+  //     containerNumber
+  //   );
+  // }
+
+  // await browser.close();
+  // console.log(eta);
+  // return eta;
 }
 
 //Function to track Maersk shipments
