@@ -147,21 +147,26 @@ async function runOne(containerNumber) {
 
   await page.goto(trackingUrl);
 
-const iframeSelector = "#IframeCurrentEcom";
-await page.waitForSelector(iframeSelector);
+  const iframeSelector = "#IframeCurrentEcom";
+  await page.waitForSelector(iframeSelector);
 
-// Find the iframe by its selector
-const elementHandle = await page.$(iframeSelector);
+  const frame = await page.$(iframeSelector);
 
-// Get the iframe content frame
-const frame = await elementHandle.contentFrame();
-console.log(frame);
+    
+    const frameContent = await frame.evaluate(() => document.body.innerHTML);
+    console.log(frameContent);
+ 
 
-// Now you can use the frame to interact within the iframe
-// For example, to get the body HTML of the iframe you can do:
-const bodyHTML = await frame.evaluate(() => document.body.innerHTML);
+  
 
-// console.log(bodyHTML);
+  // // Get the iframe content frame
+  // const frame = await elementHandle.contentFrame();
+  // console.log(frame);
+
+  // For example, to get the body HTML of the iframe you can do:
+  // const bodyHTML = await frame.evaluate(() => document.body.innerHTML);
+
+  // console.log(bodyHTML);
 
   // etaSelector = "#sailing > tbody > tr > td:nth-child(5)";
   // await page.waitForSelector(etaSelector);
@@ -178,7 +183,6 @@ const bodyHTML = await frame.evaluate(() => document.body.innerHTML);
 
   // const elementInsideIframe = await iframe.$(elementInsideIframeSelector);
   // console.log(elementInsideIframe);
-
 
   // let eta = "";
 
