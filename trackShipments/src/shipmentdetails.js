@@ -54,7 +54,7 @@ const shipments = {
     client: "Comercial Siglo XXI",
     poNumber: "5023-147K",
     product: "Belgian Truffles",
-    steamshipLine: "ONE",
+    steamshipLine: "HAPAG",
     supplier: "Premium European Delights",
     container: "FSCU5886903",
     eta: "2024-02-15",

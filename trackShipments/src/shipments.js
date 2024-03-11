@@ -28,6 +28,9 @@ async function trackShipment(shipment) {
       case "Maersk":
         eta = await runMaersk(shipment.container);
         break;
+      case "HAPAG":
+        eta = await runHapagLloyd(shipment.container);
+        break;
       case "ONE":
         eta = await runOne(shipment.container);
         break;
@@ -80,6 +83,9 @@ async function trackShipments() {
           if (latestEta !== existingShipment.eta) {
             await updateShipment(newShipment.container, latestEta);
           }
+        } else {
+          const eta = await trackShipment(newShipment);
+          await updateShipment(newShipment.container, eta);
         }
         // add a delay of 30 seconds between function calls
         await delay(30000);
@@ -128,36 +134,31 @@ async function runMsc(containerNumber) {
     return document.querySelector(selector).innerText;
   }, selector);
 
-
   const formattedDate = moment(dateText, "DD/MM/YYYY").format("D MMMM YYYY");
-  
+
   await browser.close();
   return formattedDate;
 }
 
 //Function to track ONE shipments
-async function runOne(containerNumber) {
-  const browser = await puppeteer.launch({
-    headless: false,
-    executablePath: locateChrome,
-  });
+// async function runOne(containerNumber) {
+//   const browser = await puppeteer.launch({
+//     headless: false,
+//     executablePath: locateChrome,
+//   });
 
-  const page = await browser.newPage();
-  const trackingUrl = `https://ecomm.one-line.com/one-ecom/manage-shipment/cargo-tracking?redir=Y&ctrack-field=${containerNumber}&sessLocale=en&trakNoParam=${containerNumber}`;
+//   const page = await browser.newPage();
+//   const trackingUrl = `https://ecomm.one-line.com/one-ecom/manage-shipment/cargo-tracking?redir=Y&ctrack-field=${containerNumber}&sessLocale=en&trakNoParam=${containerNumber}`;
 
-  await page.goto(trackingUrl);
+//   await page.goto(trackingUrl);
 
-  const iframeSelector = "#IframeCurrentEcom";
-  await page.waitForSelector(iframeSelector);
+//   const iframeSelector = "#IframeCurrentEcom";
+//   await page.waitForSelector(iframeSelector);
 
-  const frame = await page.$(iframeSelector);
+//   const frame = await page.$(iframeSelector);
 
-    
-    const frameContent = await frame.evaluate(() => document.body.innerHTML);
-    console.log(frameContent);
- 
-
-  
+//   const frameContent = await frame.evaluate(() => document.body.innerHTML);
+//   console.log(frameContent);
 
   // // Get the iframe content frame
   // const frame = await elementHandle.contentFrame();
@@ -213,7 +214,7 @@ async function runOne(containerNumber) {
   // await browser.close();
   // console.log(eta);
   // return eta;
-}
+// }
 
 //Function to track Maersk shipments
 async function runMaersk(containerNumber) {
@@ -271,4 +272,3 @@ async function runHapagLloyd(containerNumber) {
 
   await browser.close();
 }
-
