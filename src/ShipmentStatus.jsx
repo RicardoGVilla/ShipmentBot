@@ -1,4 +1,3 @@
-// Importing necessary dependencies from libraries
 import React, { useEffect, useState } from 'react';
 import { 
     Heading, 
