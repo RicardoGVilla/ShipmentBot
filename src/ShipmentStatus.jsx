@@ -20,7 +20,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRobot } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 
-// Functional component definition
 const ShipmentStatus = () => {
     // State variables initialization using useState hook
     const [isBotActive, setIsBotActive] = useState(false);
@@ -37,7 +36,7 @@ const ShipmentStatus = () => {
             .catch((error) => {
                 console.error('Error fetching shipments data:', error.message);
             });
-    }, []); // Empty dependency array ensures the effect runs only once on mount
+    }, []); 
 
     // Dummy variable to simulate if there are orders needing action
     const hasActionNeededOrders = true;
@@ -51,7 +50,7 @@ const ShipmentStatus = () => {
             setBotMessage("Hi! Everything is good for today. No actions needed on your orders.");
             setIsBotActive(true);
         }
-    }, [hasActionNeededOrders]); // Dependency array ensures the effect runs whenever hasActionNeededOrders changes
+    }, [hasActionNeededOrders]); 
 
     // Handler function to open the drawer
     const handleDrawerOpen = () => {
@@ -63,7 +62,6 @@ const ShipmentStatus = () => {
         setIsOpen(false);
     };
 
-    // JSX returned by the component
     return (
         <div>
             {/* Drawer component for displaying orders needing revision */}
