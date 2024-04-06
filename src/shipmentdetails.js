@@ -5,7 +5,7 @@ const shipments = {
   //   product: "Truffle Risotto",
   //   steamshipLine: "ONE",
   //   supplier: "Gourmet Italian Imports",
-  //   container: "SZLU9446927",
+  //   container: "FSCU5886903",
   //   eta: "2024-02-15",
   //   status: "In Transit",
   // },
@@ -30,16 +30,16 @@ const shipments = {
   //   status: "In Transit",
   // },
 
-  // shipment3: {
-  //   client: "Aconcagua Foods",
-  //   steamshipLine: "Maersk",
-  //   poNumber: "5023-161K",
-  //   product: "Italian Olive Oil",
-  //   supplier: "Premium Italian Imports",
-  //   container: "SUDU6068809",
-  //   eta: "2024-02-15",
-  //   status: "In Transit",
-  // },
+  shipment3: {
+    client: "Aconcagua Foods",
+    steamshipLine: "Maersk",
+    poNumber: "5023-161K",
+    product: "Italian Olive Oil",
+    supplier: "Premium Italian Imports",
+    container: "SUDU6068809",
+    eta: "2024-02-15",
+    status: "In Transit",
+  },
   // shipment4: {
   //   client: "Viña Montes",
   //   poNumber: "5023-164K",
@@ -50,16 +50,7 @@ const shipments = {
   //   eta: "2024-02-15",
   //   status: "In Transit",
   // },
-  shipment5: {
-    client: "Comercial Siglo XXI",
-    poNumber: "5023-147K",
-    product: "Belgian Truffles",
-    steamshipLine: "HAPAG",
-    supplier: "Premium European Delights",
-    container: "SEGU9097837",
-    eta: "2024-02-15",
-    status: "In Transit",
-  },
+  
 };
 
 module.exports = shipments;

@@ -18,12 +18,6 @@ async function trackShipment(shipment) {
     switch (shipment.steamshipLine) {
       case "MSC":
         eta = await runMsc(shipment.container);
-        console.log(eta);
-        if (!eta) {
-          console.log("No ETA was retrieved for this shipment.");
-        } else {
-          console.log(`ETA for container ${shipment.container}: ${eta}`);
-        }
         break;
       case "Maersk":
         eta = await runMaersk(shipment.container);
@@ -137,140 +131,86 @@ async function runMsc(containerNumber) {
   const formattedDate = moment(dateText, "DD/MM/YYYY").format("D MMMM YYYY");
 
   await browser.close();
+  console.log(`MSC: ETA for container ${formattedDate}`);
   return formattedDate;
 }
 
 //Function to track ONE shipments
-// async function runOne(containerNumber) {
-//   const browser = await puppeteer.launch({
-//     headless: false,
-//     executablePath: locateChrome,
-//   });
-
-//   const page = await browser.newPage();
-//   const trackingUrl = `https://ecomm.one-line.com/one-ecom/manage-shipment/cargo-tracking?redir=Y&ctrack-field=${containerNumber}&sessLocale=en&trakNoParam=${containerNumber}`;
-
-//   await page.goto(trackingUrl);
-
-//   const iframeSelector = "#IframeCurrentEcom";
-//   await page.waitForSelector(iframeSelector);
-
-//   const frame = await page.$(iframeSelector);
-
-//   const frameContent = await frame.evaluate(() => document.body.innerHTML);
-//   console.log(frameContent);
-
-  // // Get the iframe content frame
-  // const frame = await elementHandle.contentFrame();
-  // console.log(frame);
-
-  // For example, to get the body HTML of the iframe you can do:
-  // const bodyHTML = await frame.evaluate(() => document.body.innerHTML);
-
-  // console.log(bodyHTML);
-
-  // etaSelector = "#sailing > tbody > tr > td:nth-child(5)";
-  // await page.waitForSelector(etaSelector);
-  // dateText = insideDoc.querySelector(etaSelector);
-  // console.log(dateText);
-
-  // await page.waitForSelector(selector, { visible: true });
-
-  // const dateText = await page.evaluate((selector) => {
-  //   return document.querySelector(selector).innerText;
-  // }, selector);
-
-  // console.log(dateText)
-
-  // const elementInsideIframe = await iframe.$(elementInsideIframeSelector);
-  // console.log(elementInsideIframe);
-
-  // let eta = "";
-
-  // if (elementInsideIframe) {
-  //   const textContent = await iframe.evaluate(
-  //     (element) => element.textContent,
-  //     elementInsideIframe
-  //   );
-
-  //   // Parse the date and format it using moment
-  //   const dateMatch = textContent.match(/\d{4}-\d{2}-\d{2}/); // Assuming date is in 'yyyy-MM-dd' format
-  //   if (dateMatch) {
-  //     const formattedDate = moment(dateMatch[0]).format("D MMMM YYYY");
-  //     eta = formattedDate;
-  //   } else {
-  //     console.log(
-  //       "Date not found in the expected format for container",
-  //       containerNumber
-  //     );
-  //   }
-  // } else {
-  //   console.log(
-  //     "Element inside iframe not found for container",
-  //     containerNumber
-  //   );
-  // }
-
-  // await browser.close();
-  // console.log(eta);
-  // return eta;
-// }
-
-//Function to track Maersk shipments
-// async function runMaersk(containerNumber) {
-//   const browser = await puppeteer.launch({
-//     headless: false,
-//     executablePath: locateChrome,
-//   });
-//   const page = await browser.newPage();
-//   const trackingUrl = `https://www.maersk.com/tracking/${containerNumber}`;
-
-//   await page.goto(trackingUrl);
-
-//   const selector =
-//     "#maersk-app > div > div > div > div.container.container--ocean > dl > dd.container-info__text.container-info__text--date";
-
-//   await page.waitForSelector(selector);
-//   let etaElement = await page.$(selector);
-
-//   let eta = "Not found"; // Default value in case of an error
-//   if (etaElement) {
-//     const text = await page.evaluate(
-//       (element) => element.textContent,
-//       etaElement
-//     );
-//     eta = moment(text.trim(), "DD MMM YYYY HH:mm").format("DD MMM YYYY");
-//   } else {
-//     console.log(
-//       "Element with selector not found for container",
-//       containerNumber
-//     );
-//   }
-
-//   await browser.close();
-//   return eta;
-// }
-
-async function runHapagLloyd(containerNumber) {
+async function runOne(containerNumber) {
   const browser = await puppeteer.launch({
     headless: false,
     executablePath: locateChrome,
   });
 
   const page = await browser.newPage();
- 
-  const userAgent =
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/" +
-    (Math.floor(Math.random() * 100) + 80) +
-    ".0.0.0 Safari/537.36";
+  const trackingUrl = `https://ecomm.one-line.com/one-ecom/manage-shipment/cargo-tracking?redir=Y&ctrack-field=${containerNumber}&sessLocale=en&trakNoParam=${containerNumber}`;
 
+  await page.goto(trackingUrl);
 
-  await page.setUserAgent(userAgent);
+  const iframeSelector = "#IframeCurrentEcom";
+  await page.waitForSelector(iframeSelector);
+  const iframeElement = await page.$(iframeSelector);
+  await page.waitForTimeout(2000);
+  const iframe = await iframeElement.contentFrame();
 
-  await page.goto(
-    `https://www.hapag-lloyd.com/en/home.html`
-    // `https://www.hapag-lloyd.com/en/online-business/track/track-by-container-solution.html?container=${containerNumber}`
-  );
+  const elementInsideIframeSelector =
+    "#detail > tbody > tr:nth-child(10) > td:nth-child(4)";
+  const elementInsideIframe = await iframe.$(elementInsideIframeSelector);
 
-  // await browser.close();
+  let eta = "";
+
+  if (elementInsideIframe) {
+    const textContent = await iframe.evaluate(
+      (element) => element.textContent,
+      elementInsideIframe
+    );
+    eta = textContent;
+  } else {
+    console.log(
+      "Element inside iframe not found for container",
+      containerNumber
+    );
+  }
+
+  await browser.close();
+  return eta;
 }
+
+
+//Function to track Maersk shipments
+async function runMaersk(containerNumber) {
+  const browser = await puppeteer.launch({
+    headless: false,
+    executablePath: locateChrome,
+  });
+  const page = await browser.newPage();
+  const trackingUrl = `https://www.maersk.com/tracking/${containerNumber}`;
+
+  await page.goto(trackingUrl);
+
+  const cookiesInputSelector =
+    "#coiPage-1 > div.coi-banner__page-footer > button.coi-banner__accept.coi-banner__accept--fixed-margin";
+  await page.waitForSelector(cookiesInputSelector);
+  await page.click(cookiesInputSelector);
+
+  const selector =
+    "#maersk-app > div > div > div.container.container--ocean > dl > dd.container-info__text.container-info__text--date";
+
+  await page.waitForSelector(selector);
+
+  const dateText = await page.evaluate((selector) => {
+    const element = document.querySelector(selector);
+    return element ? element.textContent : null;
+  }, selector);
+
+  const parsedDate = moment(dateText, "DD MMM YYYY HH:mm");
+
+  const formattedDate = parsedDate.format("D MMMM YYYY");
+
+  console.log(formattedDate);
+
+  return formattedDate;
+
+}
+
+
