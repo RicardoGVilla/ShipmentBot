@@ -7,7 +7,8 @@ const {
   getShipments,
   isDatabaseEmpty,
   insertShipments,
-  updateShipment,
+  updateOrInsertShipment,
+  removeAllShipments,
 } = require("./mongodb");
 const shipments = require("./shipmentdetails");
 
@@ -75,11 +76,11 @@ async function trackShipments() {
         if (existingShipment) {
           const latestEta = await trackShipment(newShipment);
           if (latestEta !== existingShipment.eta) {
-            await updateShipment(newShipment.container, latestEta);
+            await updateOrInsertShipment(newShipment.container, latestEta); 
           }
         } else {
           const eta = await trackShipment(newShipment);
-          await updateShipment(newShipment.container, eta);
+          await updateOrInsertShipment(newShipment.container, eta); 
         }
         // add a delay of 30 seconds between function calls
         await delay(30000);
@@ -176,7 +177,6 @@ async function runOne(containerNumber) {
   return eta;
 }
 
-
 //Function to track Maersk shipments
 async function runMaersk(containerNumber) {
   const browser = await puppeteer.launch({
@@ -210,7 +210,4 @@ async function runMaersk(containerNumber) {
   console.log(formattedDate);
 
   return formattedDate;
-
 }
-
-
